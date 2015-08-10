@@ -1,4 +1,4 @@
-Python_Machine_Learning
+Python Machine Learning
 ===
 This repo aims to provide some basic Machine Learning Algorithms in Python.
 
