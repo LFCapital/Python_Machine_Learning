@@ -48,7 +48,6 @@ def naive_PLA(train_x,train_y):
         # if no mistakes, then break
         if count == 0:
             break
-    
     # print the total update numbers  
     print "The total update times for navie PLA is",wcount
 
