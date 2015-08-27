@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 '''
 This code shows how to build a C&RT tree.
 
@@ -18,32 +19,41 @@ class Node(object):
         self.righttree = None
         
     def setNode(self,flag):
+        # whether this node is a leaf node
         self.leaf = flag
 
     def setValue(self,value):
+        # this node belongs to which class
         self.value = value
         
     def setParams(self,feature,theta):
+        # decision dump params for this node
         self.feature = feature
         self.theta = theta
         
     def setLeftTree(self,left):
+        # this node's left tree root node
         self.lefttree = left
         
     def setRightTree(self,right):
+        # this node's right tree root node
         self.righttree = right
       
 def DTtree(train_x,train_y,depth):
     node = Node()
+    # get the remains unclassfied node num
     n_node = train_y.shape[0]
     if sum(train_y) == n_node or sum(train_y) == -n_node:
+        # if the dataset is pure, then set the node to leaf node
         node.setNode(True)
         if sum(train_y) == n_node:
             node.setValue(1)
         else:
             node.setValue(-1)
     else:
+        # else set the node to the normal node
         node.setNode(False)
+        #---------begin to searching for the best branching params
         low_result = np.inf
         theta_result = 0
         feature_result = -1
@@ -63,20 +73,27 @@ def DTtree(train_x,train_y,depth):
 
                 p_total = float(p_y.size)
                 n_total = float(n_y.size)
-                p_imputy = 1 - (sum(np.array(p_y == 1))/p_total)**2 - (sum(np.array(p_y == -1))/p_total)**2
-                n_imputy = 1 - (sum(np.array(n_y == 1))/n_total)**2 - (sum(np.array(n_y == -1))/n_total)**2
-
+                # calculate each class's impurity
+                if p_total != 0:
+                    p_imputy = 1 - (sum(np.array(p_y == 1))/p_total)**2 - (sum(np.array(p_y == -1))/p_total)**2
+                else:
+                    p_imputy = 0
+                if n_total != 0:
+                    n_imputy = 1 - (sum(np.array(n_y == 1))/n_total)**2 - (sum(np.array(n_y == -1))/n_total)**2
+                else:
+                    n_imputy = 0
+                # calculate the gini index
                 imputy = p_total*p_imputy + n_total*n_imputy
-
+                # if the current branching critera has lower impurtiy, then do the update operations
                 if imputy < low_result:
                     low_result = imputy
                     theta_result = theta[t]
                     feature_result = f
-
         #print feature_result,theta_result,depth
+        # keep the best branching params
         node.setParams(feature_result,theta_result)
+        # split the dataset with the params
         line = np.sign(train_x[:,feature_result] - theta_result)
-        
         left_index = (line == 1)
         right_index = (line == -1)
 
@@ -87,7 +104,7 @@ def DTtree(train_x,train_y,depth):
         left_y = np.array(temp_y[left_index])
         right_x = np.array(temp_x[right_index])
         right_y = np.array(temp_y[right_index])
-
+        # recurisive construt the decision tree
         node.setLeftTree(DTtree(left_x,left_y,depth+1))
         node.setRightTree(DTtree(right_x,right_y,depth+1))
     return node
@@ -127,7 +144,7 @@ def CART():
     
     # calculate the test dataset error
     pre_result =  np.array([Predict(DNode,test_x[i,:]) for i in xrange(test_x.shape[0])])
-    pre_result =  pre_result.reshape(1000,1)  
+    pre_result =  pre_result.reshape(test_x.shape[0],1)  
     error = sum(pre_result!=test_y)/float(test_x.shape[0])
     print "Test dataset error is",error
     
